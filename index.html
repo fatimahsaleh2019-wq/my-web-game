@@ -5,25 +5,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- سياسة أمان المحتوى لضمان حماية اللعبة -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline';">
-    <title>لعبة إدارة الموارد وتحليل البيانات</title>
+    <title>محاكي المتجر الذكي وآمن البيانات</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="game-container">
-        <h1>لعبة إدارة البيانات والموارد</h1>
-        <p>اتخذ القرار الصحيح لزيادة كفاءة المتجر وتحقيق أعلى نقاط!</p>
-        
-        <div class="score-board">
-            <span>النقاط: <strong id="score">0</strong></span>
+    <div class="game-box">
+        <header>
+            <h1>محاكي المتجر الذكي 🏪</h1>
+            <div class="stats-bar">
+                <div class="stat-item">النقاط: <strong id="score">0</strong> 💰</div>
+                <div class="stat-item">الأمان: <strong id="securityLevel">100%</strong> 🛡️</div>
+            </div>
+        </header>
+
+        <!-- ساحة اللعبة البصرية (هنا تحدث الحركة) -->
+        <div class="game-scene">
+            <!-- شخصية الزبون التي ستتحرك -->
+            <div id="customer" class="character">Walking 🚶‍♀️...</div>
+            
+            <!-- مؤثرات نقدية تظهر عند الضغط -->
+            <div id="moneyEffect" class="effect">💰+10</div>
+            <!-- مؤثرات بيانات تظهر عند الضغط -->
+            <div id="dataEffect" class="effect data-eff">📊+15</div>
         </div>
 
-        <div class="actions">
-            <button id="investBtn">استثمار في الحملات التسويقية (+10)</button>
-            <button id="cleanBtn">تنظيف وتحسين جودة البيانات (+15)</button>
+        <div class="control-panel">
+            <p>اتخذ قرارات ذكية لتنمية متجرك وتحليل بياناته بأمان!</p>
+            <div class="actions">
+                <button id="investBtn" title="زيادة المبيعات عبر التسويق">استثمار تسويقي 📢</button>
+                <button id="cleanBtn" title="تحسين جودة البيانات لتحليل أدق">تحليل بيانات 📊</button>
+            </div>
         </div>
 
-        <!-- خانة آمنة تماماً ضد ثغرات XSS -->
-        <div id="message" class="message"></div>
+        <!-- خانة الرسائل الآمنة -->
+        <div id="message" class="message-area"></div>
     </div>
 
     <script src="script.js"></script>
