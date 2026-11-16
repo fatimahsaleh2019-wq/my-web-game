@@ -18,70 +18,62 @@ body {
 
 .app-wrapper {
     width: 100%;
-    max-width: 1100px;
-    height: 96vh;
+    max-width: 1200px;
+    height: 97vh;
     background-color: #1e293b;
-    border-radius: 16px;
+    border-radius: 14px;
     border: 1px solid #334155;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
     overflow: hidden;
 }
 
 .top-bar {
     background-color: #0f172a;
-    padding: 12px 20px;
+    padding: 10px 15px;
     display: flex;
-    justify-content: space-between;
+    justify-content: space-around;
     align-items: center;
     border-bottom: 1px solid #334155;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 8px;
 }
 
-.brand {
-    font-weight: bold;
-    font-size: 1.1rem;
+.stat-pill {
+    background-color: #1e293b;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.88rem;
+    border: 1px solid #334155;
+}
+
+.stat-pill strong {
     color: #38bdf8;
 }
 
-.wallet {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    font-size: 1.05rem;
+.stat-pill.warning strong {
+    color: #facc15;
 }
 
-#balanceDisplay {
-    color: #4ade80;
-    font-size: 1.2rem;
-}
-
-.sec-badge {
-    background-color: #064e3b;
-    color: #34d399;
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    border: 1px solid #059669;
+.stat-pill.danger strong {
+    color: #f87171;
 }
 
 .action-panel {
     background-color: #334155;
-    padding: 10px 20px;
+    padding: 8px 16px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    min-height: 54px;
+    min-height: 50px;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 8px;
 }
 
 #locationTitle {
     font-weight: 600;
-    color: #e2e8f0;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
+    color: #f1f5f9;
 }
 
 .btn-group {
@@ -94,12 +86,12 @@ button {
     background-color: #2563eb;
     color: white;
     border: none;
-    padding: 8px 14px;
+    padding: 7px 13px;
     border-radius: 8px;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     font-weight: bold;
     cursor: pointer;
-    transition: background 0.2s, transform 0.1s;
+    transition: transform 0.1s, background 0.2s;
 }
 
 button:hover {
@@ -110,21 +102,29 @@ button:active {
     transform: scale(0.96);
 }
 
-button.invest-btn {
+button.success-btn {
     background-color: #059669;
 }
 
-button.invest-btn:hover {
+button.success-btn:hover {
     background-color: #047857;
+}
+
+button.warn-btn {
+    background-color: #d97706;
+}
+
+button.warn-btn:hover {
+    background-color: #b45309;
 }
 
 .canvas-container {
     flex: 1;
     position: relative;
     width: 100%;
-    background-color: #f1f5f9;
+    background-color: #f8fafc;
     cursor: pointer;
-    touch-action: none; /* لدعم اللمس السلس بدون تمرير الصفحة */
+    touch-action: none;
 }
 
 canvas {
@@ -135,9 +135,45 @@ canvas {
 
 .status-log {
     background-color: #0f172a;
-    color: #cbd5e1;
-    padding: 10px 20px;
-    font-size: 0.9rem;
+    color: #e2e8f0;
+    padding: 8px 15px;
+    font-size: 0.88rem;
     text-align: center;
     border-top: 1px solid #334155;
+}
+
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.88);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+}
+
+.modal.hidden {
+    display: none;
+}
+
+.modal-content {
+    background: #1e293b;
+    padding: 35px;
+    border-radius: 16px;
+    border: 2px solid #38bdf8;
+    text-align: center;
+    max-width: 450px;
+    width: 90%;
+}
+
+.modal-content h2 {
+    font-size: 1.6rem;
+    margin-bottom: 12px;
+    color: #38bdf8;
+}
+
+.modal-content p {
+    margin-bottom: 20px;
+    line-height: 1.6;
+    color: #cbd5e1;
 }
