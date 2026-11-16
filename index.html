@@ -3,43 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline';">
-    <title>محاكي الاقتصاد وسلاسل الإمداد</title>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self';">
+    <title>محاكي الاقتصاد وسلاسل الإمداد الذكية</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="app-wrapper">
-        <!-- الشريط العلوي: إحصائيات اللاعب والضرائب والمخزون -->
         <header class="top-bar">
             <div class="stat-pill">💰 الرصيد: <strong id="balanceDisplay">15,000</strong> ر.س</div>
             <div class="stat-pill">🎂 العمر: <strong id="ageDisplay">25</strong> سنة</div>
             <div class="stat-pill">🎓 الخبرة: <strong id="expDisplay">1</strong> سنة</div>
             <div class="stat-pill">📦 مخزون المتجر: <strong id="stockDisplay">200,000</strong></div>
             <div class="stat-pill warning">⚖️ الضريبة: <strong id="taxDisplay">3.0</strong>%</div>
-            <div class="stat-pill danger">🏦 القروض: <strong id="loansDisplay">0</strong>/3</div>
+            <div class="stat-pill danger">🏦 القروض: <strong id="loansDisplay">0</strong> / 3</div>
         </header>
 
-        <!-- لوحة المهام والتفاعل عند الاقتراب من أي مبنى -->
         <div id="actionPanel" class="action-panel">
-            <span id="locationTitle">اضغط أو المس الخريطة للتحرك 🚶‍♂️ | الهدف: 9 مليون ر.س في كل شركة</span>
+            <span id="locationTitle">المس أو انقر على أي مبنى في الخريطة للتحرك إليه 🚶‍♂️</span>
             <div id="locationButtons" class="btn-group"></div>
         </div>
 
-        <!-- ساحة اللعبة التفاعلية -->
         <div class="canvas-container">
             <canvas id="gameCanvas"></canvas>
         </div>
 
-        <!-- شريط الأحداث المباشر -->
-        <div id="statusLog" class="status-log">مرحباً! ابدأ بزيارة شركة التعلم للتوظيف أو شركة الواردات لنقل الميزانية بالسيارة 🚚</div>
+        <div id="statusLog" class="status-log">نظام المحاكاة جاهز. تحرك نحو شركة التعلم للتوظيف أو شركة الواردات لتشغيل شاحنة التمويل 🚚</div>
     </div>
 
-    <!-- شاشة النهاية (فوز أو خسارة) -->
     <div id="endModal" class="modal hidden">
         <div class="modal-content">
-            <h2 id="endTitle">انتهت اللعبة</h2>
+            <h2 id="endTitle"></h2>
             <p id="endDesc"></p>
-            <button onclick="location.reload()">إعادة اللعب من جديد 🔄</button>
+            <button id="restartBtn">إعادة اللعب من جديد 🔄</button>
         </div>
     </div>
 
