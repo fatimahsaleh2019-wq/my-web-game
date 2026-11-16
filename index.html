@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- سياسة أمان المحتوى لضمان حماية اللعبة -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline';">
+    <title>لعبة إدارة الموارد وتحليل البيانات</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <h1>لعبة إدارة البيانات والموارد</h1>
+        <p>اتخذ القرار الصحيح لزيادة كفاءة المتجر وتحقيق أعلى نقاط!</p>
+        
+        <div class="score-board">
+            <span>النقاط: <strong id="score">0</strong></span>
+        </div>
+
+        <div class="actions">
+            <button id="investBtn">استثمار في الحملات التسويقية (+10)</button>
+            <button id="cleanBtn">تنظيف وتحسين جودة البيانات (+15)</button>
+        </div>
+
+        <!-- خانة آمنة تماماً ضد ثغرات XSS -->
+        <div id="message" class="message"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
