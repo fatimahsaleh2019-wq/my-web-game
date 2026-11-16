@@ -31,10 +31,9 @@
         taxRate: 3.0,
         bankLoans: 0,
         lastActionTime: 0,
-        // مؤقتات مهام الشركات
-        eduTimer: 0,      // 120 ثانية (سنتين)
-        mgmtTimer: 0,     // 25 ثانية (إعادة هيكلة)
-        pubTimer: 0       // 20 ثانية (حملة نشر وطنية)
+        eduTimer: 0,
+        mgmtTimer: 0,
+        pubTimer: 0
     };
 
     function canPerformAction() {
@@ -73,20 +72,22 @@
         speed: 0.014
     };
 
-    // الطائرة الدولية في المطار (تستغرق 15 ثانية)
+    // الطائرة وحركتها الواقعية على المدرج وفي الجو (15 ثانية)
     const plane = {
         active: false,
         secondsLeft: 0,
         totalSeconds: 15,
-        cargoType: "" // "staff" أو "products"
+        cargoType: "",
+        animProgress: 0 // حركة سلسة 60 إطار بالثانية
     };
 
-    // السفن في البحر بجانب شركة الواردات البحرية (تستغرق 12 ثانية)
+    // السفن وحركتها البحرية الملاصقة لشركة الواردات (12 ثانية)
     const ship = {
         active: false,
         secondsLeft: 0,
         totalSeconds: 12,
-        waveOffset: 0
+        waveOffset: 0,
+        animProgress: 0
     };
 
     // اللاعب
@@ -106,7 +107,7 @@
             id: "bank",
             name: "🏦 البنك المركزي",
             type: "bank",
-            rx: 0.52, ry: 0.13,
+            rx: 0.54, ry: 0.13,
             w: 165, h: 68,
             color: "#1e3a8a", border: "#3b82f6"
         },
@@ -114,15 +115,15 @@
             id: "airport",
             name: "✈️ المطار الدولي",
             type: "airport",
-            rx: 0.52, ry: 0.50,
-            w: 185, h: 82,
-            color: "#0f172a", border: "#38bdf8"
+            rx: 0.54, ry: 0.50,
+            w: 220, h: 90,
+            color: "#1e293b", border: "#38bdf8"
         },
         {
             id: "store",
             name: "🏪 المتجر الموزع",
             type: "store",
-            rx: 0.52, ry: 0.87,
+            rx: 0.54, ry: 0.87,
             w: 180, h: 72,
             color: "#7c2d12", border: "#f97316"
         },
@@ -130,8 +131,8 @@
             id: "edu",
             name: "شركة التعلم",
             type: "company",
-            rx: 0.25, ry: 0.22,
-            w: 215, h: 138,
+            rx: 0.27, ry: 0.22,
+            w: 210, h: 138,
             color: "#064e3b", border: "#10b981",
             budget: 25000,
             fame: 10000,
@@ -142,8 +143,8 @@
             id: "mgmt",
             name: "شركة الإدارة",
             type: "company",
-            rx: 0.83, ry: 0.22,
-            w: 215, h: 138,
+            rx: 0.84, ry: 0.22,
+            w: 210, h: 138,
             color: "#312e81", border: "#6366f1",
             budget: 35000,
             fame: 15000,
@@ -154,8 +155,8 @@
             id: "marine",
             name: "شركة الواردات البحرية",
             type: "company",
-            rx: 0.25, ry: 0.78,
-            w: 215, h: 138,
+            rx: 0.26, ry: 0.78, // ملاصقة مباشرة للشاطئ والبحر
+            w: 210, h: 138,
             color: "#164e63", border: "#06b6d4",
             budget: 40000,
             fame: 12000,
@@ -166,8 +167,8 @@
             id: "saudi_pub",
             name: "شركة الإصدارات السعودية",
             type: "company",
-            rx: 0.83, ry: 0.78,
-            w: 215, h: 138,
+            rx: 0.84, ry: 0.78,
+            w: 210, h: 138,
             color: "#4c1d95", border: "#a855f7",
             budget: 32000,
             fame: 14000,
@@ -190,7 +191,7 @@
         canvas.width = rect.width;
         canvas.height = rect.height;
         if (!player.initialized) {
-            player.x = canvas.width * 0.52;
+            player.x = canvas.width * 0.54;
             player.y = canvas.height * 0.32;
             player.targetX = player.x;
             player.targetY = player.y;
@@ -201,7 +202,7 @@
     resizeCanvas();
 
     function getBuildingRect(b) {
-        const scale = state.gameWon ? 1.1 : 1.0;
+        const scale = state.gameWon ? 1.08 : 1.0;
         const w = b.w * scale;
         const h = b.h * scale;
         const cx = b.rx * canvas.width;
@@ -212,8 +213,7 @@
     function handlePointerMove(clientX, clientY) {
         if (state.gameOver || state.gameWon) return;
         const rect = canvas.getBoundingClientRect();
-        // منع الدخول في عمق البحر (أول 11% من اليسار)
-        const minX = canvas.width * 0.12;
+        const minX = canvas.width * 0.15; // حدود الشاطئ
         player.targetX = Math.max(minX, Math.min(canvas.width - 20, clientX - rect.left));
         player.targetY = Math.max(20, Math.min(canvas.height - 20, clientY - rect.top));
     }
@@ -253,6 +253,20 @@
             }
         }
 
+        // حركة الطائرة السلسة (60 إطار في الثانية)
+        if (plane.active) {
+            plane.animProgress = Math.min(1, plane.animProgress + (1 / (plane.totalSeconds * 60)));
+        } else {
+            plane.animProgress = 0;
+        }
+
+        // حركة السفينة السلسة في البحر
+        if (ship.active) {
+            ship.animProgress = Math.min(1, ship.animProgress + (1 / (ship.totalSeconds * 60)));
+        } else {
+            ship.animProgress = 0;
+        }
+
         // تحديث الأسهم اللحظية
         for (let i = activeArrows.length - 1; i >= 0; i--) {
             activeArrows[i].progress += activeArrows[i].speed;
@@ -267,8 +281,8 @@
         let found = null;
         for (const b of buildings) {
             const r = getBuildingRect(b);
-            if (player.x >= r.x - 14 && player.x <= r.x + r.w + 14 &&
-                player.y >= r.y - 14 && player.y <= r.y + r.h + 14) {
+            if (player.x >= r.x - 16 && player.x <= r.x + r.w + 16 &&
+                player.y >= r.y - 16 && player.y <= r.y + r.h + 16) {
                 found = b;
                 break;
             }
@@ -279,7 +293,7 @@
             renderActionPanel(found);
         } else if (!found && currentBuildingId !== null) {
             currentBuildingId = null;
-            setSafeText(locationTitle, "المس أو انقر على أي مبنى أو المطار أو الميناء للتحرك إليه 🚶‍♂️");
+            setSafeText(locationTitle, "المس أو انقر على المطار بالوسط أو الميناء البحري أو الشركات للتحرك 🚶‍♂️");
             locationButtons.innerHTML = "";
         }
     }
@@ -295,18 +309,18 @@
         locationButtons.innerHTML = "";
 
         if (b.id === "airport") {
-            setSafeText(locationTitle, "✈️ المطار الدولي | الشروط: خبرة 3 سنوات + رسوم 4,000 ر.س + ضريبة < 5.5% (مدة الرحلة: 15ث)");
+            setSafeText(locationTitle, "✈️ المطار الدولي | الشروط: خبرة 3 سنوات + رسوم 4,000 ر.س + ضريبة < 5.5% (الرحلة: 15ث)");
             
             const importProductsBtn = document.createElement("button");
             importProductsBtn.className = "success-btn";
-            setSafeText(importProductsBtn, plane.active ? `✈️ الطائرة بالجو (${plane.secondsLeft}ث)` : "استيراد منتجات من الخارج (+150,000 منتج)");
+            setSafeText(importProductsBtn, plane.active ? `✈️ الطائرة في رحلة (${plane.secondsLeft}ث)` : "استيراد منتجات دولية (+150,000 منتج)");
             importProductsBtn.disabled = plane.active;
             importProductsBtn.onclick = () => startFlight("products");
             locationButtons.appendChild(importProductsBtn);
 
             const importStaffBtn = document.createElement("button");
             importStaffBtn.className = "warn-btn";
-            setSafeText(importStaffBtn, plane.active ? `✈️ الطائرة بالجو (${plane.secondsLeft}ث)` : "استقدام خبراء دوليين (+1 موظف لكل شركة)");
+            setSafeText(importStaffBtn, plane.active ? `✈️ الطائرة في رحلة (${plane.secondsLeft}ث)` : "نقل موظفين دوليين (+1 موظف لكل شركة)");
             importStaffBtn.disabled = plane.active;
             importStaffBtn.onclick = () => startFlight("staff");
             locationButtons.appendChild(importStaffBtn);
@@ -347,7 +361,7 @@
 
             const shipBtn = document.createElement("button");
             shipBtn.className = "success-btn";
-            setSafeText(shipBtn, ship.active ? `🚢 السفينة تبحر (${ship.secondsLeft}ث)` : "إبحار سفينة شحن دولية (12ث) (+25k ميزانية و +100k منتج)");
+            setSafeText(shipBtn, ship.active ? `🚢 السفينة تبحر (${ship.secondsLeft}ث)` : "إبحار سفينة شحن (12ث) (+25k ميزانية و +100k منتج)");
             shipBtn.disabled = ship.active;
             shipBtn.onclick = () => {
                 if (!canPerformAction() || ship.active) return;
@@ -358,6 +372,7 @@
                 state.balanceSAR -= 2500;
                 ship.active = true;
                 ship.secondsLeft = ship.totalSeconds;
+                ship.animProgress = 0;
                 updateTopUI();
                 refreshCurrentPanel();
                 setSafeText(statusLog, "🚢 أبحرت السفينة من الميناء لجلب الإمدادات البحرية (12 ثانية)!");
@@ -468,7 +483,6 @@
         }
     }
 
-    // تشغيل رحلة الطائرة بشروطها
     function startFlight(type) {
         if (!canPerformAction() || plane.active) return;
         if (state.playerExp < 3) {
@@ -486,10 +500,11 @@
         state.balanceSAR -= 4000;
         plane.active = true;
         plane.secondsLeft = plane.totalSeconds;
+        plane.animProgress = 0;
         plane.cargoType = type;
         updateTopUI();
         refreshCurrentPanel();
-        setSafeText(statusLog, "✈️ أقلعت الطائرة في رحلة دولية (15 ثانية)!");
+        setSafeText(statusLog, "✈️ أقلعت الطائرة من المدرج في رحلة دولية (15 ثانية)!");
     }
 
     function addInvestButton(company) {
@@ -511,13 +526,10 @@
         locationButtons.appendChild(investBtn);
     }
 
-    // =========================================================
-    // المؤقتات الزمنية للمهام والطائرة والسفن (كل 1 ثانية)
-    // =========================================================
+    // المؤقتات الزمنية (كل 1 ثانية)
     setInterval(() => {
         if (state.gameOver || state.gameWon) return;
 
-        // 1. مؤقت الطائرة الدولية (15 ثانية)
         if (plane.active) {
             plane.secondsLeft -= 1;
             if (plane.secondsLeft <= 0) {
@@ -525,7 +537,7 @@
                 if (plane.cargoType === "products") {
                     state.storeStock += 150000;
                     spawnArrow("airport", "store", "#38bdf8", "✈️ +150k منتج");
-                    setSafeText(statusLog, "🛬 هبطت الطائرة! تم تزويد المتجر بـ +150,000 منتج مستورد.");
+                    setSafeText(statusLog, "🛬 هبطت الطائرة بسلام! تم تزويد المتجر بـ +150,000 منتج مستورد.");
                 } else {
                     buildings.forEach(b => {
                         if (b.type === "company" && b.employees < 8) {
@@ -533,14 +545,13 @@
                             spawnArrow("airport", b.id, "#facc15", "👨‍💼 موظف دولي");
                         }
                     });
-                    setSafeText(statusLog, "🛬 هبطت الطائرة! تم توزيع موظفين دوليين على الشركات.");
+                    setSafeText(statusLog, "🛬 هبطت الطائرة بسلام! تم توزيع موظفين دوليين على الشركات.");
                 }
             }
             refreshCurrentPanel();
             updateTopUI();
         }
 
-        // 2. مؤقت السفينة البحرية (12 ثانية)
         if (ship.active) {
             ship.secondsLeft -= 1;
             if (ship.secondsLeft <= 0) {
@@ -555,7 +566,6 @@
             updateTopUI();
         }
 
-        // 3. مؤقت عقد شركة التعلم (120 ثانية = سنتين)
         if (state.eduTimer > 0) {
             state.eduTimer -= 1;
             if (state.eduTimer % 15 === 0) {
@@ -570,7 +580,6 @@
             updateTopUI();
         }
 
-        // 4. مؤقت تحدي شركة الإدارة (25 ثانية)
         if (state.mgmtTimer > 0) {
             state.mgmtTimer -= 1;
             if (state.mgmtTimer === 0) {
@@ -582,7 +591,6 @@
             updateTopUI();
         }
 
-        // 5. مؤقت تحدي شركة الإصدارات السعودية (20 ثانية)
         if (state.pubTimer > 0) {
             state.pubTimer -= 1;
             if (state.pubTimer === 0) {
@@ -595,9 +603,7 @@
         }
     }, 1000);
 
-    // =========================================================
     // محاكاة الاقتصاد والأسهم اللحظية (كل 2.5 ثانية)
-    // =========================================================
     let cycleCount = 0;
     setInterval(() => {
         if (state.gameOver || state.gameWon) return;
@@ -681,48 +687,63 @@
     }
 
     // =========================================================
-    // رسم البحر والسفن والمباني والطائرة والأسهم
+    // رسم البحر والسفن الملاصقة لشركة البحرية
     // =========================================================
     function drawSeaAndShips() {
-        const seaWidth = canvas.width * 0.11;
-        // مياه البحر على اليسار
+        const seaWidth = canvas.width * 0.14;
         const grad = ctx.createLinearGradient(0, 0, seaWidth, 0);
-        grad.addColorStop(0, "#0369a1");
-        grad.addColorStop(1, "#0284c7");
+        grad.addColorStop(0, "#0c4a6e");
+        grad.addColorStop(0.7, "#0284c7");
+        grad.addColorStop(1, "#38bdf8");
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, seaWidth, canvas.height);
 
         // خط الشاطئ الرملي
-        ctx.fillStyle = "#fde68a";
-        ctx.fillRect(seaWidth - 6, 0, 6, canvas.height);
+        ctx.fillStyle = "#fde047";
+        ctx.fillRect(seaWidth - 7, 0, 7, canvas.height);
 
-        // أمواج متحركة
-        ship.waveOffset += 0.04;
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.35)";
+        // رصيف الميناء الخشبي الممتد نحو البحر بجانب شركة الواردات البحرية
+        const marineB = buildings.find(b => b.id === "marine");
+        const rMarine = getBuildingRect(marineB);
+        ctx.fillStyle = "#92400e";
+        ctx.fillRect(seaWidth - 35, rMarine.cy - 12, 42, 24);
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 10px Tahoma";
+        ctx.textAlign = "center";
+        ctx.fillText("⚓ ميناء", seaWidth - 15, rMarine.cy + 4);
+
+        // أمواج البحر المتحركة
+        ship.waveOffset += 0.035;
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.45)";
         ctx.lineWidth = 2;
-        for (let y = 30; y < canvas.height; y += 55) {
-            const wx = 18 + Math.sin(ship.waveOffset + y) * 6;
+        for (let y = 25; y < canvas.height; y += 50) {
+            const wx = 15 + Math.sin(ship.waveOffset + y * 0.05) * 6;
             ctx.beginPath();
             ctx.moveTo(wx, y);
-            ctx.quadraticCurveTo(wx + 15, y - 6, wx + 30, y);
+            ctx.quadraticCurveTo(wx + 18, y - 7, wx + 36, y);
             ctx.stroke();
         }
 
-        // رسم السفن في البحر
-        ctx.font = "26px Tahoma";
+        // السفن في البحر
+        ctx.font = "30px Tahoma";
         ctx.textAlign = "center";
+
+        // سفينة ثابتة تتمايل برفق في الميناء
+        const bobbing = Math.sin(ship.waveOffset * 1.5) * 4;
+        ctx.fillText("⛵", seaWidth * 0.42, rMarine.cy - 55 + bobbing);
+
         if (ship.active) {
-            // سفينة متحركة في مهمة بحرية
-            const progress = 1 - (ship.secondsLeft / ship.totalSeconds);
-            const sy = canvas.height * (0.85 - progress * 0.65);
-            ctx.fillText("🚢", seaWidth * 0.5, sy);
+            // حركة إبحار السفينة ذهاباً وإياباً بوضوح
+            const cycle = Math.sin(ship.animProgress * Math.PI); // تذهب للأعلى وتعود للميناء
+            const sy = rMarine.cy - cycle * (canvas.height * 0.58);
+            ctx.fillText("🚢", seaWidth * 0.55, sy);
+
             ctx.fillStyle = "#ffffff";
             ctx.font = "bold 11px Tahoma";
-            ctx.fillText(`${ship.secondsLeft}ث`, seaWidth * 0.5, sy + 16);
+            ctx.fillText(`شحن بحري (${ship.secondsLeft}ث)`, seaWidth * 0.55, sy + 20);
         } else {
-            // سفن راسية في الميناء بجانب شركة الواردات البحرية
-            ctx.fillText("⛵", seaWidth * 0.45, canvas.height * 0.72);
-            ctx.fillText("🚢", seaWidth * 0.52, canvas.height * 0.84);
+            // السفينة الرئيسية راسية بجانب رصيف شركة البحرية
+            ctx.fillText("🚢", seaWidth * 0.55, rMarine.cy + 10 + bobbing);
         }
     }
 
@@ -787,33 +808,39 @@
                 ctx.font = "10.5px Tahoma";
                 ctx.fillText(`ميزانية: ${(b.budget / 1000).toFixed(0)}k | شهرة: ${(b.fame / 1000).toFixed(1)}k`, r.cx, r.y + 33);
 
-                // مكتب المسؤول
                 drawDesk(r.cx, r.y + 50, "#facc15");
 
-                // 5 موظفين بمكاتبهم (أو أكثر عند الاستقدام)
                 const cols = 4;
                 for (let i = 0; i < b.employees; i++) {
                     const col = i % cols;
                     const row = Math.floor(i / cols);
-                    const wx = r.x + 32 + col * 50;
+                    const wx = r.x + 32 + col * 48;
                     const wy = r.y + 84 + row * 32;
                     drawDesk(wx, wy, "#38bdf8");
                 }
             } else if (b.id === "airport") {
-                // مدرج المطار بالوسط
-                ctx.strokeStyle = "#64748b";
+                // رسم مدرج المطار بالوسط بوضوح
+                const runwayY = r.cy + 14;
+                ctx.fillStyle = "#334155";
+                ctx.fillRect(r.x + 14, runwayY - 12, r.w - 28, 24);
+
+                // خطوط المدرج البيضاء
+                ctx.save();
+                ctx.strokeStyle = "#ffffff";
                 ctx.lineWidth = 2;
+                ctx.setLineDash([10, 8]);
                 ctx.beginPath();
-                ctx.moveTo(r.x + 15, r.cy + 14);
-                ctx.lineTo(r.x + r.w - 15, r.cy + 14);
+                ctx.moveTo(r.x + 22, runwayY);
+                ctx.lineTo(r.x + r.w - 22, runwayY);
                 ctx.stroke();
+                ctx.restore();
 
                 ctx.fillStyle = "#7dd3fc";
                 ctx.font = "11px Tahoma";
                 if (plane.active) {
-                    ctx.fillText(`✈️ رحلة دولية جارية (${plane.secondsLeft}ث)`, r.cx, r.y + 38);
+                    ctx.fillText(`رحلة دولية جارية (${plane.secondsLeft}ث)`, r.cx, r.y + 34);
                 } else {
-                    ctx.fillText("استقبال موظفين ومنتجات دولية", r.cx, r.y + 38);
+                    ctx.fillText("مدرج جاهز للإقلاع (خبرة 3+ سنوات)", r.cx, r.y + 34);
                 }
             } else if (b.id === "store") {
                 ctx.fillStyle = "#fed7aa";
@@ -841,16 +868,51 @@
     }
 
     function drawVehiclesAndPlayer() {
-        // الطائرة أثناء تحليقها من المطار
-        if (plane.active) {
-            const rAir = getBuildingRect(buildings.find(b => b.id === "airport"));
-            const progress = 1 - (plane.secondsLeft / plane.totalSeconds);
-            const px = rAir.cx + Math.cos(progress * Math.PI * 2) * 140;
-            const py = rAir.cy + Math.sin(progress * Math.PI * 2) * 75;
+        const rAir = getBuildingRect(buildings.find(b => b.id === "airport"));
+        const runwayY = rAir.cy + 14;
+
+        // رسم الطائرة على المدرج أو أثناء الإقلاع والهبوط الواقعي
+        ctx.save();
+        if (!plane.active) {
+            // متوقفة على بداية المدرج جاهزة للإقلاع
+            ctx.font = "24px Tahoma";
+            ctx.textAlign = "center";
+            ctx.fillText("✈️", rAir.x + 35, runwayY + 7);
+        } else {
+            const p = plane.animProgress;
+            let px, py, scale = 1, angle = 0;
+
+            if (p < 0.25) {
+                // مرحلة 1: تسارع على المدرج ثم إقلاع للأعلى
+                const t = p / 0.25;
+                px = rAir.x + 35 + t * (rAir.w - 60);
+                py = runwayY - (t > 0.5 ? (t - 0.5) * 140 : 0);
+                angle = t > 0.5 ? -0.45 : 0;
+                scale = 1 + (t > 0.5 ? (t - 0.5) * 0.6 : 0);
+            } else if (p < 0.75) {
+                // مرحلة 2: تحليق عالٍ في مسار مستقيم فوق السحاب ثم الالتفاف للعودة
+                const t = (p - 0.25) / 0.5;
+                px = (rAir.x + rAir.w - 25) - t * (rAir.w - 50);
+                py = runwayY - 85 - Math.sin(t * Math.PI) * 35;
+                angle = Math.PI; // متجهة لليسار للعودة
+                scale = 1.35;
+            } else {
+                // مرحلة 3: نزول تدريجي وهبوط ناعم على المدرج
+                const t = (p - 0.75) / 0.25;
+                px = rAir.x + 35 + (1 - t) * 40;
+                py = (runwayY - 85) + t * 85;
+                angle = 0.35 * (1 - t);
+                scale = 1.35 - t * 0.35;
+            }
+
+            ctx.translate(px, py);
+            ctx.rotate(angle);
+            ctx.scale(scale, scale);
             ctx.font = "26px Tahoma";
             ctx.textAlign = "center";
-            ctx.fillText("✈️", px, py);
+            ctx.fillText("✈️", 0, 8);
         }
+        ctx.restore();
 
         // الشاحنة بين الواردات البحرية والتعلم
         if (truck.active) {
