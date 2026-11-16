@@ -4,33 +4,43 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline';">
-    <title>عالم الأعمال والبنك الاستثماري</title>
+    <title>محاكي الاقتصاد وسلاسل الإمداد</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="app-wrapper">
-        <!-- الشريط العلوي: الرصيد بالريال وحالة الأمان -->
+        <!-- الشريط العلوي: إحصائيات اللاعب والضرائب والمخزون -->
         <header class="top-bar">
-            <div class="brand">🏛️ البنك الاستثماري وشبكة الشركات</div>
-            <div class="wallet">
-                <span>الرصيد: <strong id="balanceDisplay">10,000</strong> ر.س</span>
-                <span class="sec-badge">🛡️ نظام محمي</span>
-            </div>
+            <div class="stat-pill">💰 الرصيد: <strong id="balanceDisplay">15,000</strong> ر.س</div>
+            <div class="stat-pill">🎂 العمر: <strong id="ageDisplay">25</strong> سنة</div>
+            <div class="stat-pill">🎓 الخبرة: <strong id="expDisplay">1</strong> سنة</div>
+            <div class="stat-pill">📦 مخزون المتجر: <strong id="stockDisplay">200,000</strong></div>
+            <div class="stat-pill warning">⚖️ الضريبة: <strong id="taxDisplay">3.0</strong>%</div>
+            <div class="stat-pill danger">🏦 القروض: <strong id="loansDisplay">0</strong>/3</div>
         </header>
 
-        <!-- لوحة التحكم السريعة عند الاقتراب من مبنى -->
+        <!-- لوحة المهام والتفاعل عند الاقتراب من أي مبنى -->
         <div id="actionPanel" class="action-panel">
-            <span id="locationTitle">اضغط أو المس أي مكان في الخريطة للتحرك 🚶‍♂️</span>
+            <span id="locationTitle">اضغط أو المس الخريطة للتحرك 🚶‍♂️ | الهدف: 9 مليون ر.س في كل شركة</span>
             <div id="locationButtons" class="btn-group"></div>
         </div>
 
-        <!-- ساحة اللعبة التفاعلية (Canvas) -->
+        <!-- ساحة اللعبة التفاعلية -->
         <div class="canvas-container">
             <canvas id="gameCanvas"></canvas>
         </div>
 
-        <!-- شريط التنبيهات الآمن -->
-        <div id="statusLog" class="status-log">مرحباً بك! تحرك نحو البنك أو الشركات لإدارة استثماراتك بالريال السعودي.</div>
+        <!-- شريط الأحداث المباشر -->
+        <div id="statusLog" class="status-log">مرحباً! ابدأ بزيارة شركة التعلم للتوظيف أو شركة الواردات لنقل الميزانية بالسيارة 🚚</div>
+    </div>
+
+    <!-- شاشة النهاية (فوز أو خسارة) -->
+    <div id="endModal" class="modal hidden">
+        <div class="modal-content">
+            <h2 id="endTitle">انتهت اللعبة</h2>
+            <p id="endDesc"></p>
+            <button onclick="location.reload()">إعادة اللعب من جديد 🔄</button>
+        </div>
     </div>
 
     <script src="script.js"></script>
